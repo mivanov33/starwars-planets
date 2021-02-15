@@ -31,7 +31,22 @@ export default class Application extends EventEmitter {
    */
   async init() {
     // Initiate classes and wait for async operations here.
+    
+    const fetchPlanets = async() => {
+      const planets = await fetch("https://swapi.booost.bg/api/planets/");
+      const planetsIntoJson = await planets.json();
+  
+      this.data.planets = planetsIntoJson.results;
+      this.data.count = planetsIntoJson.count;
+  
+      let planet = planetsIntoJson;
+      while (planet.next) {
+        planet = await (await fetch(planet.next)).json();
+        this.data.planets = [...this.data.planets, ...planet.results];
+      }
+    };
 
+    await fetchPlanets();
     this.emit(Application.events.APP_READY);
   }
 }
